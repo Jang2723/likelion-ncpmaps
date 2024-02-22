@@ -1,11 +1,9 @@
 package com.example.ncpmaps.service;
 
-import com.example.ncpmaps.dto.NaviRouteDto;
-import com.example.ncpmaps.dto.NaviWithPointsDto;
-import com.example.ncpmaps.dto.NaviWithQueryDto;
-import com.example.ncpmaps.dto.PointDto;
+import com.example.ncpmaps.dto.*;
 import com.example.ncpmaps.dto.direction.DirectionNcpResponse;
 import com.example.ncpmaps.dto.geocoding.GeoNcpResponse;
+import com.example.ncpmaps.dto.geolocation.GeoLocationNcpResponse;
 import com.example.ncpmaps.dto.rgeocoding.RGeoNcpResponse;
 import com.example.ncpmaps.dto.rgeocoding.RGeoRegion;
 import com.example.ncpmaps.dto.rgeocoding.RGeoResponseDto;
@@ -75,5 +73,31 @@ public class NaviService {
                 dto.getStart(),
                 goal
         ));
+    }
+
+    public NaviRouteDto withIpAddress(NaviWithIpsDto dto) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("ip", dto.getStartIp());
+        params.put("responseFormatType", "json");
+        params.put("ext", "t");
+        GeoLocationNcpResponse startInfo
+                = geolocationService.geoLocation(params);
+        log.info(startInfo.toString());
+
+        params.put("ip", dto.getGoalIp());
+        GeoLocationNcpResponse goalInfo
+                = geolocationService.geoLocation(params);
+        log.info(goalInfo.toString());
+
+        PointDto start = new PointDto(
+                startInfo.getGeoLocation().getLat(),
+                startInfo.getGeoLocation().getLng()
+        );
+        PointDto goal = new PointDto(
+                goalInfo.getGeoLocation().getLat(),
+                goalInfo.getGeoLocation().getLng()
+        );
+
+        return twoPointRoute(new NaviWithPointsDto(start, goal));
     }
 }
